@@ -1,0 +1,14 @@
+[Unit]
+Description=Allround server daemon
+After=network.target
+
+[Service]
+PIDFile=/tmp/allround/allround-api.pid
+LogFile=/tmp/allround/logs/allround-api.log
+User={SV_USER}
+Group={SV_GROUP}
+WorkingDirectory={ALLROUND_PATH}
+ExecStart = /usr/local/bin/gunicorn --bind 0.0.0.0:{SERVER_PORT} app_init:app
+
+[Install]
+WantedBy=multi-user.target

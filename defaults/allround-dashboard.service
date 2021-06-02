@@ -1,0 +1,14 @@
+[Unit]
+Description=Allround dashboard daemon
+After=network.target
+
+[Service]
+PIDFile=/tmp/allround/allround-dashboard.pid
+LogFile=/tmp/allround/logs/allround-dashboard.log
+User={SV_USER}
+Group={SV_GROUP}
+WorkingDirectory={ALLROUND_PATH}
+ExecStart = /usr/local/bin/gunicorn --bind 0.0.0.0:{SERVER_PORT} dashboard_init:app
+
+[Install]
+WantedBy=multi-user.target

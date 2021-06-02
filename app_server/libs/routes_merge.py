@@ -1,4 +1,4 @@
-from api_server.api.common import routes_common
+from app_server.api.common import routes_common
 
 def routes_merge(routes):
     new_list = []

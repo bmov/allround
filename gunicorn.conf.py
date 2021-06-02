@@ -172,7 +172,7 @@ spew = False
 #       None to signal that Python should choose one on its own.
 #
 
-daemon = False
+daemon = bool(os.getenv('GUNICORN_DAEMON', False))
 
 #
 #   Logging
@@ -186,9 +186,9 @@ daemon = False
 #       A string of "debug", "info", "warning", "error", "critical"
 #
 
-errorlog = '-'
+errorlog = './data/logs/error.log'
 loglevel = os.getenv('GUNICORN_LOG_LEVEL', 'info')
-accesslog = '-'
+accesslog = './data/logs/access.log'
 
 #
 # Process naming

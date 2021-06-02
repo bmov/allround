@@ -2,6 +2,7 @@ from flask import Blueprint
 from app_server.api.v1 import routes_v1
 from app_server.libs.routes_merge import routes_merge
 
+
 def reg_bp(app):
     api_v1 = Blueprint('api_v1', __name__)
 

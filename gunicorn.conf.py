@@ -101,8 +101,14 @@ backlog = int(os.getenv('GUNICORN_BACKLOG', 2048))
 #       You'll want to vary this a bit to find the best for your
 #       particular application's work load.
 
-workers = int(os.getenv('WEB_CONCURRENCY', multiprocessing.cpu_count() * 2 + 1))
-threads = int(os.getenv('GUNICORN_THREADS', multiprocessing.cpu_count() * 2 + 1))
+workers = int(os.getenv(
+    'WEB_CONCURRENCY',
+    multiprocessing.cpu_count() * 2 + 1
+))
+threads = int(os.getenv(
+    'GUNICORN_THREADS',
+    multiprocessing.cpu_count() * 2 + 1
+))
 worker_class = os.getenv('GUNICORN_WORKER_CLASS', 'sync')
 worker_connections = int(os.getenv('GUNICORN_WORKER_CONNECTIONS', 2000))
 max_requests = int(os.getenv('GUNICORN_MAX_REQUESTS', 0))

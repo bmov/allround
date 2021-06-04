@@ -6,7 +6,7 @@ default_env = None
 if os.getenv('ALLROUND_MODE') == 'dev':
     default_env = dotenv_values(".env.dev")
 else:
-    default_env = dotenv_values(".env.products")
+    default_env = dotenv_values(".env.prod")
 
 config = {
     **dotenv_values(".env.server"),

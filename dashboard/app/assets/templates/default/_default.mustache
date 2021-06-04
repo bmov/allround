@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>{{title}}</title>
+    {{#head_css_files}}
+      <link rel="stylesheet" href="{{css_href}}" />
+    {{/head_css_files}}
+    {{#head_js_files}}
+      <script
+      {{#attr}}
+        {{key}}="{{value}}"
+      {{/attr}}
+      type="text/javascript" src="{{js_href}}"></script>
+    {{/head_js_files}}
+    {{{another_header}}}
+    <style>{{{default_style}}}</style><script>{{{default_script}}}</script>
+  </head>
+  <body>
+    {{{default_body}}}
+  </body>
+  {{#body_js_files}}
+    <script
+    {{#attr}} {{key}}="{{value}}" {{/attr}}
+    type="text/javascript" src="{{js_href}}"></script>
+  {{/body_js_files}}
+</html>

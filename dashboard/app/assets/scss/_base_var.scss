@@ -1,0 +1,40 @@
+$light: 300;
+$regular: 400;
+$semibold: 600;
+$bold: 700;
+$ultra: 800;
+
+$white: #fff;
+$black: #000;
+$text-primary: #5f6876;
+$text-secondary: #c0c3c9;
+
+$default-browser-font-size: 16;
+
+@function rem($pixels, $context: $default-browser-font-size) {
+  @if unitless($pixels) {
+    $pixels: $pixels * 1px;
+  }
+
+  @if unitless($context) {
+    $context: $context * 1px;
+  }
+
+  @return $pixels / $context * 1rem;
+}
+
+$base-background: $white;
+$base-font-color: $text-secondary;
+$base-font-family: sans-serif;
+$base-font-size: rem(14);
+$base-font-weight: $regular;
+$base-line-height: rem(14);
+
+$dashboard-background: $white;
+$dashboard-width: rem(1024);
+$dashboard-height: rem(680);
+$dashboard-border-color: #f2f2f2;
+$dashboard-border-radius: rem(7);
+$dashboard-box-shadow: rem(22) rem(32) rem(34) rgba($black, 0.06);
+
+$sidebar-size: rem(225);

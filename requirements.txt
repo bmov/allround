@@ -1,3 +1,5 @@
 flask
 flake8
 python-dotenv
+htmlmin
+flask-stache

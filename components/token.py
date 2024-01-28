@@ -9,6 +9,7 @@ from app.models import db
 secret = env['APP_SECRET']
 jwt_lifetime = env['JWT_LIFETIME']
 jwt_algo = 'HS256'
+jwt_refresh_lifetime = env['JWT_REFRESH_LIFETIME']
 
 
 class Token:
@@ -42,7 +43,7 @@ class Token:
             return refresh_token
 
         new_token = str(uuid.uuid4())
-        expire = time.time() + int(jwt_lifetime)
+        expire = time.time() + int(jwt_refresh_lifetime)
 
         refresh = TokenRefreshers(username=username,
                                   refresh_token=new_token,

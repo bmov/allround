@@ -56,3 +56,34 @@ class TokenRefreshers(db.Model):
     username = db.Column(db.String(64), index=True, nullable=False)
     refresh_token = db.Column(db.String(36), index=True, nullable=False)
     expire = db.Column(db.Integer, index=True, default=0, nullable=False)
+
+
+class Pages(db.Model):
+    """
+    Create an Pages table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = table_prefix + 'pages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, nullable=False)
+    folder = db.Column(db.Integer, default=0, index=True, nullable=False)
+    page_type = db.Column(db.String(32), index=True, nullable=False)
+    description = db.Column(db.Text(), nullable=True)
+
+
+class PageFolders(db.Model):
+    """
+    Create an PageFolders table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = table_prefix + 'page_folders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, nullable=False)
+    parent = db.Column(db.Integer, default=0, index=True, nullable=False)
+    description = db.Column(db.Text(), nullable=True)

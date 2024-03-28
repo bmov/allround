@@ -1,5 +1,6 @@
 from ._root import ApiRoot
 from .auth import Auth
+from .pages import Pages
 
 
 routes = [
@@ -10,5 +11,9 @@ routes = [
     {
         'route': '/auth',
         'object': Auth
+    },
+    {
+        'route': '/pages',
+        'object': Pages
     },
 ]

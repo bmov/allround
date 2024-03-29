@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from .environment import env
 
-table_prefix = env['TABLE_PREFIX']
 db = SQLAlchemy()
 
 
@@ -12,7 +11,7 @@ class Users(db.Model):
 
     # Ensures table will be named in plural and not in singular
     # as is the name of the model
-    __tablename__ = table_prefix + 'users'
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True,
@@ -33,7 +32,7 @@ class Docs(db.Model):
 
     # Ensures table will be named in plural and not in singular
     # as is the name of the model
-    __tablename__ = table_prefix + 'docs'
+    __tablename__ = 'docs'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
@@ -50,7 +49,7 @@ class TokenRefreshers(db.Model):
 
     # Ensures table will be named in plural and not in singular
     # as is the name of the model
-    __tablename__ = table_prefix + 'token_refreshers'
+    __tablename__ = 'token_refreshers'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, nullable=False)
@@ -65,7 +64,7 @@ class Pages(db.Model):
 
     # Ensures table will be named in plural and not in singular
     # as is the name of the model
-    __tablename__ = table_prefix + 'pages'
+    __tablename__ = 'pages'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -81,7 +80,7 @@ class PageFolders(db.Model):
 
     # Ensures table will be named in plural and not in singular
     # as is the name of the model
-    __tablename__ = table_prefix + 'page_folders'
+    __tablename__ = 'page_folders'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, nullable=False)

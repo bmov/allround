@@ -1,10 +1,11 @@
-from flask_sqlalchemy import SQLAlchemy
-from .environment import env
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, String, Integer, Text, BigInteger, \
+    Boolean, Numeric, Float, Double, ForeignKey
 
-db = SQLAlchemy()
+Base = declarative_base()
 
 
-class Users(db.Model):
+class Users(Base):
     """
     Create an Users table
     """
@@ -13,19 +14,19 @@ class Users(db.Model):
     # as is the name of the model
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True,
-                         unique=True, nullable=False)
-    passwd = db.Column(db.String(128), nullable=False)
-    name = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    intro_text = db.Column(db.Text(), nullable=True)
-    signdate = db.Column(db.Integer, nullable=False)
-    confirm = db.Column(db.Integer, default=0, nullable=False)
-    confirm_key = db.Column(db.String(64), index=True, nullable=True)
+    id = Column(BigInteger, primary_key=True)
+    username = Column(String(64), index=True,
+                      unique=True, nullable=False)
+    passwd = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=False)
+    email = Column(String(64), index=True, unique=True, nullable=False)
+    intro_text = Column(Text(), nullable=True)
+    signdate = Column(Integer, nullable=False)
+    confirm = Column(Integer, default=0, nullable=False)
+    confirm_key = Column(String(64), index=True, nullable=True)
 
 
-class Docs(db.Model):
+class Docs(Base):
     """
     Create an Docs table
     """
@@ -34,15 +35,15 @@ class Docs(db.Model):
     # as is the name of the model
     __tablename__ = 'docs'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    content = db.Column(db.Text(), nullable=False)
-    username = db.Column(db.String(64), index=True, nullable=True)
-    date = db.Column(db.Integer, index=True, nullable=False)
-    update_date = db.Column(db.Integer, index=True, nullable=True)
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(128), nullable=False)
+    content = Column(Text(), nullable=False)
+    username = Column(String(64), index=True, nullable=True)
+    date = Column(Integer, index=True, nullable=False)
+    update_date = Column(Integer, index=True, nullable=True)
 
 
-class TokenRefreshers(db.Model):
+class TokenRefreshers(Base):
     """
     Create an TokenRefreshers table
     """
@@ -51,13 +52,13 @@ class TokenRefreshers(db.Model):
     # as is the name of the model
     __tablename__ = 'token_refreshers'
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, nullable=False)
-    refresh_token = db.Column(db.String(36), index=True, nullable=False)
-    expire = db.Column(db.Integer, index=True, default=0, nullable=False)
+    id = Column(BigInteger, primary_key=True)
+    username = Column(String(64), index=True, nullable=False)
+    refresh_token = Column(String(36), index=True, nullable=False)
+    expire = Column(Integer, index=True, default=0, nullable=False)
 
 
-class Pages(db.Model):
+class Pages(Base):
     """
     Create an Pages table
     """
@@ -66,14 +67,14 @@ class Pages(db.Model):
     # as is the name of the model
     __tablename__ = 'pages'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True, nullable=False)
-    folder = db.Column(db.Integer, default=0, index=True, nullable=False)
-    page_type = db.Column(db.String(32), index=True, nullable=False)
-    description = db.Column(db.Text(), nullable=True)
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(64), index=True, nullable=False)
+    folder_id = Column(BigInteger, index=True, nullable=False)
+    page_type = Column(String(32), index=True, nullable=False)
+    description = Column(Text(), nullable=True)
 
 
-class PageFolders(db.Model):
+class PageFolders(Base):
     """
     Create an PageFolders table
     """
@@ -82,7 +83,95 @@ class PageFolders(db.Model):
     # as is the name of the model
     __tablename__ = 'page_folders'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True, nullable=False)
-    parent = db.Column(db.Integer, default=0, index=True, nullable=False)
-    description = db.Column(db.Text(), nullable=True)
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(64), index=True, nullable=False)
+    parent = Column(Integer, default=0, index=True, nullable=False)
+    description = Column(Text(), nullable=True)
+
+
+class Tables(Base):
+    """
+    Create an Tables table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = 'tables'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), nullable=False, index=True)
+    autoincrement = Column(BigInteger, nullable=True, index=True)
+
+
+class TableColumns(Base):
+    """
+    Create an TableColumns table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = 'table_columns'
+
+    id = Column(BigInteger, primary_key=True)
+    table_id = Column(ForeignKey('tables.id'),
+                      nullable=False, index=True)
+    name = Column(String(64), nullable=False, index=True)
+    column_type = Column(String(16), nullable=False, index=True)
+
+    table = relationship(
+        'Tables', primaryjoin='TableColumns.table_id == Tables.id',
+        backref='table_columns')
+
+
+class TableRows(Base):
+    """
+    Create an TableRows table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = 'table_rows'
+
+    id = Column(BigInteger, primary_key=True)
+    table_id = Column(ForeignKey('tables.id'),
+                      nullable=False, index=True)
+
+    table = relationship(
+        'Tables', primaryjoin='TableRows.table_id == Tables.id',
+        backref='table_rows')
+
+
+class TableValues(Base):
+    """
+    Create an TableValues table
+    """
+
+    # Ensures table will be named in plural and not in singular
+    # as is the name of the model
+    __tablename__ = 'table_values'
+
+    id = Column(BigInteger, primary_key=True)
+    table_id = Column(ForeignKey('tables.id'),
+                      nullable=False, index=True)
+    row_id = Column(ForeignKey('table_rows.id'),
+                    nullable=False, index=True)
+    column_id = Column(ForeignKey(
+        'table_columns.id'), nullable=False, index=True)
+    val_str = Column(String(191), nullable=True, index=True)
+    val_int = Column(BigInteger, nullable=True, index=True)
+    val_bool = Column(Boolean, nullable=True, index=True)
+    val_decimal = Column(Numeric, nullable=True, index=True)
+    val_float = Column(Float, nullable=True, index=True)
+    val_double = Column(Double, nullable=True, index=True)
+    val_text = Column(Text(), nullable=True)
+    val_binpath = Column(String(255), nullable=True, index=True)
+
+    column = relationship(
+        'TableColumns', primaryjoin='TableValues.column_id == TableColumns.id',
+        backref='table_values')
+    row = relationship(
+        'TableRows', primaryjoin='TableValues.row_id == TableRows.id',
+        backref='table_values')
+    table = relationship(
+        'Tables', primaryjoin='TableValues.table_id == Tables.id',
+        backref='table_values')

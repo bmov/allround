@@ -1,4 +1,7 @@
-from app.models import db, Pages, PageFolders
+from app.models import Pages, PageFolders
+from app.database import async_session
+
+from sqlalchemy.sql.expression import select
 
 
 class FolderNotFoundError(Exception):
@@ -17,30 +20,43 @@ class PageFolderNameError(Exception):
 
 
 class PageHandler:
-    def addPage(self, name, folder=0, page_type='text', description=None):
-        find_folder = PageFolders.query.filter_by(id=folder).first()
-        if not find_folder and folder:
-            raise FolderNotFoundError()  # Folder not found
+    async def addPage(self, name, folder=0,
+                      page_type='text', description=None):
+        async with async_session() as session:
+            find_folder = await session.execute(
+                select(PageFolders).
+                filter_by(id=folder)
+            ).scalar_one()
+            if not find_folder and folder:
+                raise FolderNotFoundError()  # Folder not found
 
-        find_name = Pages.query.filter_by(name=name, folder=folder).first()
-        if find_name:
-            raise PageNameError()  # Page name already exists
+            find_name = await session.execute(
+                select(Pages).
+                filter_by(name=name, folder=folder)
+            ).scalar_one()
 
-        page = Pages(name=name, folder=folder,
-                     page_type=page_type, description=description)
-        db.session.add(page)
-        db.session.commit()
+            if find_name:
+                raise PageNameError()  # Page name already exists
+
+            page = Pages(name=name, folder=folder,
+                         page_type=page_type, description=description)
+            session.add(page)
+            await session.commit()
 
         return True
 
-    def addFolder(self, name, parent=0, description=None):
-        find_name = PageFolders.query.filter_by(
-            name=name, parent=parent).first()
-        if find_name:
-            raise PageFolderNameError()  # Folder name already exists
+    async def addFolder(self, name, parent=0, description=None):
+        async with async_session() as session:
+            find_name = await session.execute(
+                select(PageFolders).
+                filter_by(name=name, parent=parent)
+            ).scalar_one()
+            if find_name:
+                raise PageFolderNameError()  # Folder name already exists
 
-        page_folder = PageFolders(
-            name=name, parent=parent, description=description)
-        db.session.add(page_folder)
+            page_folder = PageFolders(
+                name=name, parent=parent, description=description)
+            session.add(page_folder)
+            await session.commit()
 
         return True

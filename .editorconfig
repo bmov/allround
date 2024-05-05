@@ -10,3 +10,6 @@ trim_trailing_whitespace = true
 
 [*.{js,json,scss,sass,html,mustache}]
 indent_size = 2
+
+[*.{yaml,yml}]
+indent_size = 2

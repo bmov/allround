@@ -1,7 +1,7 @@
 """unique refresh_token
 
 Revision ID: 50ec56c01479
-Revises: eb096987147a
+Revises: 9d0c5c629bfa
 Create Date: 2024-05-06 06:08:34.416667
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '50ec56c01479'
-down_revision: Union[str, None] = 'eb096987147a'
+down_revision: Union[str, None] = '9d0c5c629bfa'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -14,7 +14,8 @@ class Users(Base):
     # as is the name of the model
     __tablename__ = 'users'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     username = Column(String(64), index=True,
                       unique=True, nullable=False)
     passwd = Column(String(128), nullable=False)
@@ -35,7 +36,8 @@ class Docs(Base):
     # as is the name of the model
     __tablename__ = 'docs'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     name = Column(String(128), nullable=False)
     content = Column(Text(), nullable=False)
     username = Column(String(64), index=True, nullable=True)
@@ -52,7 +54,8 @@ class TokenRefreshers(Base):
     # as is the name of the model
     __tablename__ = 'token_refreshers'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     username = Column(String(64), index=True, nullable=False)
     refresh_token = Column(String(36), index=True, unique=True, nullable=False)
     expire = Column(Integer, index=True, default=0, nullable=False)
@@ -67,7 +70,8 @@ class Pages(Base):
     # as is the name of the model
     __tablename__ = 'pages'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     name = Column(String(64), index=True, nullable=False)
     folder_id = Column(BigInteger, index=True, nullable=False)
     page_type = Column(String(32), index=True, nullable=False)
@@ -83,7 +87,8 @@ class PageFolders(Base):
     # as is the name of the model
     __tablename__ = 'page_folders'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     name = Column(String(64), index=True, nullable=False)
     parent = Column(Integer, default=0, index=True, nullable=False)
     description = Column(Text(), nullable=True)
@@ -112,7 +117,8 @@ class TableColumns(Base):
     # as is the name of the model
     __tablename__ = 'table_columns'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     table_id = Column(ForeignKey('tables.id'),
                       nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
@@ -132,7 +138,8 @@ class TableRows(Base):
     # as is the name of the model
     __tablename__ = 'table_rows'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     table_id = Column(ForeignKey('tables.id'),
                       nullable=False, index=True)
 
@@ -150,7 +157,8 @@ class TableValues(Base):
     # as is the name of the model
     __tablename__ = 'table_values'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger().with_variant(
+        Integer, 'sqlite'), primary_key=True)
     table_id = Column(ForeignKey('tables.id'),
                       nullable=False, index=True)
     row_id = Column(ForeignKey('table_rows.id'),

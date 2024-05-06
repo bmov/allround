@@ -35,4 +35,4 @@ uvicorn main:app # add '--reload' to watch the source directory
 ```
 
 # Swagger UI
-http://localhost/api/ui/
+http://localhost:8000/api/ui/

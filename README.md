@@ -15,9 +15,24 @@ The following DBMSs will be supported: MariaDB, PostgreSQL, SQLite
 # Run
 
 ```bash
+# Create venv
+python -m venv .venv
+
+# unix
+source .venv/bin/activate
+
+# windows
+./venv/Scripts/activate
+
+# Install packages
+pip install -r ./requirements.txt
+
 # Upgrade the database
 alembic upgrade head
 
 # Run
 uvicorn main:app # add '--reload' to watch the source directory
 ```
+
+# Swagger UI
+http://localhost/api/ui/

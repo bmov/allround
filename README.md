@@ -14,6 +14,26 @@ The following DBMSs will be supported: MariaDB, PostgreSQL, SQLite
 
 # Run
 
+## Configure
+
+- Copy `.env.server` to `.env`.
+- Edit `SQL_DATABASE_URI`:
+
+  ```
+  # mysql
+  mysql+aiomysql://user:password@localhost/db_name
+
+  # postgresql
+  postgresql+asyncpg://user:password@localhost/db_name
+
+  # sqlite
+  sqlite+aiosqlite:///path
+  ```
+
+- Edit `APP_SECRET`. This recommend a minimum of 32 characters [0-9a-zA-Z].
+
+## Run
+
 ```bash
 # Create venv
 python -m venv .venv
@@ -35,4 +55,5 @@ uvicorn main:app # add '--reload' to watch the source directory
 ```
 
 # Swagger UI
+
 http://localhost:8000/api/ui/

@@ -54,7 +54,7 @@ class TokenRefreshers(Base):
 
     id = Column(BigInteger, primary_key=True)
     username = Column(String(64), index=True, nullable=False)
-    refresh_token = Column(String(36), index=True, nullable=False)
+    refresh_token = Column(String(36), index=True, unique=True, nullable=False)
     expire = Column(Integer, index=True, default=0, nullable=False)
 
 

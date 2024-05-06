@@ -7,6 +7,7 @@ from app.models import TokenRefreshers
 from app.database import async_session
 
 from sqlalchemy.sql.expression import select
+from sqlalchemy.exc import IntegrityError
 
 secret = env['APP_SECRET']
 jwt_lifetime = env['JWT_LIFETIME']
@@ -51,9 +52,12 @@ class Token:
                                   refresh_token=new_token,
                                   expire=expire)
 
-        async with async_session() as session:
-            session.add(refresh)
-            await session.commit()
+        try:
+            async with async_session() as session:
+                session.add(refresh)
+                await session.commit()
+        except IntegrityError:
+            return await self.createRefreshToken(username)
 
         return new_token
 

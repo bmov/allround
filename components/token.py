@@ -4,7 +4,9 @@ import uuid
 
 from app.environment import env
 from app.models import TokenRefreshers
-from app.models import db
+from app.database import async_session
+
+from sqlalchemy.sql.expression import select
 
 secret = env['APP_SECRET']
 jwt_lifetime = env['JWT_LIFETIME']
@@ -36,8 +38,8 @@ class Token:
 
         return token
 
-    def createRefreshToken(self, username):
-        refresh_token = self.getRefreshToken(username)
+    async def createRefreshToken(self, username):
+        refresh_token = await self.getRefreshToken(username)
 
         if refresh_token:
             return refresh_token
@@ -48,46 +50,58 @@ class Token:
         refresh = TokenRefreshers(username=username,
                                   refresh_token=new_token,
                                   expire=expire)
-        db.session.add(refresh)
-        db.session.commit()
+
+        async with async_session() as session:
+            session.add(refresh)
+            await session.commit()
 
         return new_token
 
-    def refreshAccessToken(self, refresh_token):
-        find_exists = TokenRefreshers.query.filter_by(
-            refresh_token=refresh_token).first()
+    async def refreshAccessToken(self, refresh_token):
+        async with async_session() as session:
+            find_exists = await session.scalars(
+                select(TokenRefreshers).
+                filter_by(refresh_token=refresh_token).
+                limit(1)
+            )
 
-        if find_exists:
-            check_expire = find_exists.expire
+            find_exists = find_exists.first()
 
-            # if it valid
-            if check_expire > time.time():
-                token = self.createAccessToken(find_exists.username)
+            if find_exists:
+                check_expire = find_exists.expire
 
-                return {
-                    'success': True,
-                    'accessToken': token,
-                    'refreshToken': refresh_token
-                }
-            else:
-                db.session.delete(find_exists)
-                db.session.commit()
+                # if it valid
+                if check_expire > time.time():
+                    token = self.createAccessToken(find_exists.username)
+                    return {
+                        'success': True,
+                        'accessToken': token,
+                        'refreshToken': refresh_token
+                    }
+                else:
+                    session.delete(find_exists)
+                    await session.commit()
 
         return None
 
-    def getRefreshToken(self, username):
-        find_exists = TokenRefreshers.query.filter_by(
-            username=username).first()
+    async def getRefreshToken(self, username):
+        async with async_session() as session:
+            find_exists = await session.scalars(
+                select(TokenRefreshers).
+                filter_by(username=username).
+                limit(1)
+            )
 
-        if find_exists:
-            check_expire = find_exists.expire
+            find_exists = find_exists.first()
 
-            # if it valid
-            if check_expire > time.time():
-                # return the current refreshToken
-                return find_exists.refresh_token
-            else:
-                db.session.delete(find_exists)
-                db.session.commit()
+            if find_exists:
+                check_expire = find_exists.expire
 
+                # if it valid
+                if check_expire > time.time():
+                    # return the current refreshToken
+                    return find_exists.refresh_token
+                else:
+                    session.delete(find_exists)
+                    await session.commit()
         return None

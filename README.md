@@ -8,9 +8,16 @@ Similar to a Contents Management System, that makes it easy for manage data.
 
 # Development stack
 
-Python 3, Flask-based web app.
+Python 3, Connexion-based web app.
 
 The following DBMSs will be supported: MariaDB, PostgreSQL, SQLite
 
-# Installation
+# Run
 
+```bash
+# Upgrade the database
+alembic upgrade head
+
+# Run
+uvicorn main:app # add '--reload' to watch the source directory
+```

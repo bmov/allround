@@ -1,54 +1,27 @@
 import time
-from flask import request
-from flask_restx import fields, Resource, Namespace, abort
+from components.render_json import message
+from connexion import request
 
-from app.models import db, Users
+from app.models import Users
+from app.database import async_session
 from components.token import Token
 from components.password import Password
-
-Auth = Namespace('Auth')
-
-model_access_token = Auth.model('AccessToken', {
-    'accessToken': fields.String(description='Access token',
-                                 required=False)
-})
-model_signin_data = Auth.model('SignInForm', {
-    'username': fields.String(description='The username of the user to '
-                              'sign in.',
-                              required=True),
-    'passwd': fields.String(description='Password',
-                            required=True),
-})
-model_signup_data = Auth.model('SignUpForm', {
-    'passwd': fields.String(description='Password',
-                            required=True),
-    'name': fields.String(description='Display name',
-                          required=True),
-    'email': fields.String(description='Email address',
-                           required=True),
-    'intro_text': fields.String(description='Status messages',
-                                required=False)
-
-})
-
-header_access_token = Auth.parser()
-header_access_token.add_argument('X-Access-Token', location='headers')
+from components.user import User
 
 
-@Auth.route('/user/<string:username>')
-@Auth.doc(params={
-    'username': 'Username'
-})
-class User(Resource):
-    @Auth.expect(header_access_token)
-    def get(self, username):
+class UserApi:
+    async def get(username):
         """
         Get user information
         """
 
-        find_username = Users.query.filter_by(username=username).first()
+        user = User()
+        find_username = await user.findUserByUsername(username)
+
         if not find_username:
-            return abort(404, status=False)  # Username not found
+            return message(None,
+                           message='Username not found.',
+                           code=400)  # Username not found
 
         access_token = request.headers.get('X-Access-Token')
 
@@ -57,8 +30,10 @@ class User(Resource):
             decoded_token = token.decodeToken(access_token)
 
             if type(decoded_token) is not dict:
-                # Invalid token
-                return abort(500, decoded_token, status=False)
+
+                return message(None,
+                               message='Invalid token.',
+                               code=401)  # Invalid token
 
             if decoded_token['username'] == username:
                 # Signed user and get user are same
@@ -67,8 +42,7 @@ class User(Resource):
                     'name': find_username.name,
                     'email': find_username.email,
                     'intro_text': find_username.intro_text,
-                    'signdate': find_username.signdate,
-                    'token': decoded_token
+                    'signdate': find_username.signdate
                 }
             else:
                 return {
@@ -84,21 +58,20 @@ class User(Resource):
             'signdate': find_username.signdate,
         }
 
-    @Auth.expect(model_signup_data)
-    def put(self, username):
+    async def put(username, payload):
         """
         Sign up
         """
 
-        passwd = request.json.get('passwd')
+        passwd = payload['passwd']
 
         pw = Password()
         pw.passwd = passwd
         passwd_hash = pw.password_hash()
 
-        name = request.json.get('name')
-        email = request.json.get('email')
-        intro_text = request.json.get('intro_text')
+        name = payload['name']
+        email = payload['email']
+        intro_text = payload['intro_text']
         signdate = time.time()
         confirm = 1
         confirm_key = ''
@@ -110,12 +83,19 @@ class User(Resource):
                        signdate=signdate,
                        confirm=confirm,
                        confirm_key=confirm_key)
-        db.session.add(signup)
-        db.session.commit()
+
+        async with async_session() as session:
+            session.add(signup)
+            try:
+                await session.commit()
+            except Exception:
+                return message(None,
+                               message='Failed to create user.',
+                               code=500)  # error
+
         return {'status': True}
 
-    @Auth.expect(model_access_token)
-    def delete(self, username):
+    def delete(username):
         """
         Remove account
         """
@@ -123,23 +103,25 @@ class User(Resource):
         return {}
 
 
-@Auth.route('/signin')
-class SignIn(Resource):
-    @Auth.expect(model_signin_data)
-    def post(self):
+class SignInApi:
+    async def post(payload):
         """
         Sign in
         """
 
-        username = request.json.get('username')
-        passwd = request.json.get('passwd')
+        username = payload['username']
+        passwd = payload['passwd']
 
         token = Token()
 
         # Sign in
-        find_username = Users.query.filter_by(username=username).first()
+        user = User()
+        find_username = await user.findUserByUsername(username)
+
         if not find_username:
-            return abort(401, status=False)  # Username not found
+            return message(None,
+                           message='Username not found.',
+                           code=400)  # Username not found
 
         pw = Password()
         pw.passwd = passwd
@@ -147,23 +129,28 @@ class SignIn(Resource):
         if pw.verify_passwd(find_username.passwd):
             if find_username.confirm:
                 # success
+                access_token = token.createAccessToken(
+                    find_username.username)
+                refresh_token = await token.createRefreshToken(
+                    find_username.username)
+
                 return {
                     'status': True,
-                    'accessToken': token.createAccessToken(
-                        find_username.username),
-                    'refreshToken': token.createRefreshToken(
-                        find_username.username),
+                    'accessToken': access_token,
+                    'refreshToken': refresh_token
                 }
             else:
-                # Not a verified user
-                return abort(401, 'Not a verified user', status=False)
+                return message(None,
+                               message='Not a verified user.',
+                               code=401)  # Not a verified user
 
-        return abort(401, status=False)
+        return message(None,
+                       message='Username or password doesn\'t match.',
+                       code=400)  # Username or password doesn't match
 
 
-@Auth.route('/reset')
-class ResetAccount(Resource):
-    def post(self):
+class ResetAccountApi:
+    def post():
         """
         Reset account
         """

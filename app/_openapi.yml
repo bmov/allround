@@ -1,0 +1,151 @@
+openapi: '3.0.0'
+info:
+  title: Allround API
+  description: Allround
+  termsOfService: https://bmov.co/terms/
+  contact:
+    email: contact@bmov.co
+  license:
+    name: MIT
+    url: https://github.com/bmov/allround/blob/main/LICENSE
+  version: '0.1'
+servers:
+  - url: /v1
+    description: allround api v1
+tags:
+  - name: ApiRoot
+  - name: Auth
+  - name: Pages
+paths:
+  /main/hello:
+    get:
+      operationId: api.main._root.HelloIndexApi.get
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  hello:
+                    type: string
+                    description: Example result
+                    example: 'hello world from api_main'
+      summary: Testing activity
+      tags:
+        - ApiRoot
+  /v1/hello:
+    get:
+      operationId: api.v1._root.HelloIndexApi.get
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  hello:
+                    type: string
+                    description: Example result
+                    example: 'hello world from api_v1'
+      summary: Testing activity
+      tags:
+        - ApiRoot
+  /v1/auth/signin:
+    post:
+      operationId: api.v1.auth.SignInApi.post
+      responses:
+        '200':
+          description: Success
+      summary: Sign in
+      requestBody:
+        x-body-name: payload
+        content:
+          application/json:
+            schema:
+              required:
+                - username
+                - passwd
+              properties:
+                username:
+                  type: string
+                  description: Username
+                passwd:
+                  type: string
+                  description: Password
+              type: object
+      tags:
+        - Auth
+  /v1/auth/user/{username}:
+    get:
+      operationId: api.v1.auth.UserApi.get
+      responses:
+        '200':
+          description: Success
+      summary: Get user information
+      parameters:
+        - name: X-Access-Token
+          in: header
+          schema:
+            type: string
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username
+      tags:
+        - Auth
+    put:
+      operationId: api.v1.auth.UserApi.put
+      responses:
+        '200':
+          description: Success
+      summary: Sign up
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username
+      requestBody:
+        x-body-name: payload
+        content:
+          application/json:
+            schema:
+              required:
+                - email
+                - name
+                - passwd
+              properties:
+                passwd:
+                  type: string
+                  description: Password
+                name:
+                  type: string
+                  description: Display name
+                email:
+                  type: string
+                  description: Email address
+                intro_text:
+                  type: string
+                  description: Status messages
+              type: object
+      tags:
+        - Auth
+    delete:
+      operationId: api.v1.auth.UserApi.delete
+      responses:
+        '200':
+          description: Success
+      summary: Remove account
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username
+      tags:
+        - Auth

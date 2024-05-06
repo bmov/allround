@@ -1,6 +1,3 @@
-import json
-
-
 def message(body, message='', code=200):
     dict = {}
     dict['status'] = code

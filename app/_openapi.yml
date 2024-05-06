@@ -17,9 +17,43 @@ tags:
   - name: Auth
   - name: Pages
 paths:
+  /main/hello:
+    get:
+      operationId: api.main._root.HelloIndexApi.get
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  hello:
+                    type: string
+                    description: Example result
+                    example: 'hello world from api_main'
+      summary: Testing activity
+      tags:
+        - ApiRoot
+  /v1/hello:
+    get:
+      operationId: api.v1._root.HelloIndexApi.get
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  hello:
+                    type: string
+                    description: Example result
+                    example: 'hello world from api_v1'
+      summary: Testing activity
+      tags:
+        - ApiRoot
   /v1/auth/signin:
     post:
-      operationId: api.v1.auth.SignIn.post
+      operationId: api.v1.auth.SignInApi.post
       responses:
         '200':
           description: Success
@@ -44,7 +78,7 @@ paths:
         - Auth
   /v1/auth/user/{username}:
     get:
-      operationId: api.v1.auth.User.get
+      operationId: api.v1.auth.UserApi.get
       responses:
         '200':
           description: Success
@@ -63,7 +97,7 @@ paths:
       tags:
         - Auth
     put:
-      operationId: api.v1.auth.User.put
+      operationId: api.v1.auth.UserApi.put
       responses:
         '200':
           description: Success
@@ -101,7 +135,7 @@ paths:
       tags:
         - Auth
     delete:
-      operationId: api.v1.auth.User.delete
+      operationId: api.v1.auth.UserApi.delete
       responses:
         '200':
           description: Success
@@ -113,19 +147,5 @@ paths:
           schema:
             type: string
           description: Username
-      requestBody:
-        x-body-name: payload
-        content:
-          application/json:
-            schema:
-              required:
-                - email
-                - name
-                - passwd
-              properties:
-                accessToken:
-                  type: string
-                  description: Access token
-              type: object
       tags:
         - Auth

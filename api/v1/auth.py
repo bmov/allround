@@ -6,23 +6,17 @@ from app.models import Users
 from app.database import async_session
 from components.token import Token
 from components.password import Password
+from components.user import User
 
-from sqlalchemy.sql.expression import select
 
-
-class User:
+class UserApi:
     async def get(username):
         """
         Get user information
         """
-        async with async_session() as session:
-            get = await session.scalars(
-                select(Users).
-                filter_by(username=username).
-                limit(1)
-            )
 
-        find_username = get.first()
+        user = User()
+        find_username = await user.findUserByUsername(username)
 
         if not find_username:
             return message(None,
@@ -109,7 +103,7 @@ class User:
         return {}
 
 
-class SignIn:
+class SignInApi:
     async def post(payload):
         """
         Sign in
@@ -121,14 +115,8 @@ class SignIn:
         token = Token()
 
         # Sign in
-        async with async_session() as session:
-            get = await session.scalars(
-                select(Users).
-                filter_by(username=username).
-                limit(1)
-            )
-
-        find_username = get.first()
+        user = User()
+        find_username = await user.findUserByUsername(username)
 
         if not find_username:
             return message(None,
@@ -161,7 +149,7 @@ class SignIn:
                        code=400)  # Username or password doesn't match
 
 
-class ResetAccount:
+class ResetAccountApi:
     def post():
         """
         Reset account

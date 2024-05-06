@@ -1,57 +1,28 @@
-from flask import request
-from flask_restx import fields, Resource, Namespace, abort
-
-from components.pagehandler import (
-    PageHandler, FolderNotFoundError, PageNameError, PageFolderNameError)
-
-Pages = Namespace('Pages')
-
-model_put_page = Pages.model('NewPage', {
-    'name': fields.String(description='Page name',
-                          required=True),
-    'folder': fields.Integer(description='Add page to children',
-                             required=True),
-    'page_type': fields.String(description='Page type (default: `text`)',
-                               required=False),
-    'description': fields.String(description='Description',
-                                 required=False)
-
-})
+from components.render_json import message
+from components.page import (
+    Page, FolderNotFoundError, PageNameError, PageFolderNameError)
 
 
-@Pages.route('/viewRoute')
-class ViewRoute(Resource):
-    def post(self):
-        return {
-            'data': 'It works!<br>test'
-        }
+class PagesApi:
+    async def put(payload):
+        name = payload['name']
+        folder = payload['folder']
+        page_type = payload['page_type']
+        description = payload['description']
 
-    def get(self):
-        return {
-            'data': 'It works!'
-        }
-
-
-@Pages.route('/page')
-class Page(Resource):
-    @Pages.expect(model_put_page)
-    def put(self):
-        name = request.json.get('name')
-        folder = request.json.get('folder')
-        page_type = request.json.get('page_type')
-        description = request.json.get('description')
-
-        page_handler = PageHandler()
+        page = Page()
 
         try:
-            page_handler.addPage(name, folder=folder,
-                                 page_type=page_type, description=description)
+            await page.addPage(name, folder=folder,
+                               page_type=page_type,
+                               description=description)
         except (FolderNotFoundError, PageNameError) as error:
-            return abort(500, error, status=False)
+            return message(None,
+                           message=error, code=400)
 
         return {'status': True}
 
-    def get(self):
+    def get():
         return {
             'data': 'It works!'
         }

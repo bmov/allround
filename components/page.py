@@ -19,21 +19,28 @@ class PageFolderNameError(Exception):
         return 'This folder name already exists or is invalid.'
 
 
-class PageHandler:
+class Page:
     async def addPage(self, name, folder=0,
                       page_type='text', description=None):
         async with async_session() as session:
-            find_folder = await session.execute(
+            get = await session.scalars(
                 select(PageFolders).
-                filter_by(id=folder)
-            ).scalar_one()
+                filter_by(id=folder).
+                limit(1)
+            )
+
+            find_folder = get.first()
+
             if not find_folder and folder:
                 raise FolderNotFoundError()  # Folder not found
 
-            find_name = await session.execute(
+            get = await session.scalars(
                 select(Pages).
-                filter_by(name=name, folder=folder)
-            ).scalar_one()
+                filter_by(name=name, folder=folder).
+                limit(1)
+            )
+
+            find_name = get.first()
 
             if find_name:
                 raise PageNameError()  # Page name already exists
@@ -47,10 +54,14 @@ class PageHandler:
 
     async def addFolder(self, name, parent=0, description=None):
         async with async_session() as session:
-            find_name = await session.execute(
+            get = await session.scalars(
                 select(PageFolders).
-                filter_by(name=name, parent=parent)
-            ).scalar_one()
+                filter_by(name=name, parent=parent).
+                limit(1)
+            )
+
+            find_name = get.first()
+
             if find_name:
                 raise PageFolderNameError()  # Folder name already exists
 

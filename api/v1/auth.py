@@ -10,6 +10,7 @@ from components.user import User
 
 
 class UserApi:
+    @staticmethod
     async def get(username):
         """
         Get user information
@@ -58,6 +59,7 @@ class UserApi:
             'signdate': find_username.signdate,
         }
 
+    @staticmethod
     async def put(username, payload):
         """
         Sign up
@@ -95,6 +97,7 @@ class UserApi:
 
         return {'status': True}
 
+    @staticmethod
     def delete(username):
         """
         Remove account
@@ -104,6 +107,7 @@ class UserApi:
 
 
 class SignInApi:
+    @staticmethod
     async def post(payload):
         """
         Sign in
@@ -150,7 +154,8 @@ class SignInApi:
 
 
 class ResetAccountApi:
-    def post():
+    @staticmethod
+    async def post():
         """
         Reset account
         """

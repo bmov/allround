@@ -18,7 +18,7 @@ jwt_refresh_lifetime = env['JWT_REFRESH_LIFETIME']
 class Token:
     def decodeToken(self, token):
         try:
-            decoded = jwt.decode(token, secret, algorithms=jwt_algo)
+            decoded = jwt.decode(token, secret, algorithms=[jwt_algo])
         except (jwt.exceptions.DecodeError,
                 jwt.exceptions.ExpiredSignatureError) as error:
             return f'{type(error).__name__}: {error}'
@@ -57,7 +57,7 @@ class Token:
                 session.add(refresh)
                 await session.commit()
         except IntegrityError:
-            return await self.createRefreshToken(username)
+            return self.createRefreshToken(username)
 
         return new_token
 
@@ -83,7 +83,7 @@ class Token:
                         'refreshToken': refresh_token
                     }
                 else:
-                    session.delete(find_exists)
+                    await session.delete(find_exists)
                     await session.commit()
 
         return None
@@ -106,6 +106,6 @@ class Token:
                     # return the current refreshToken
                     return find_exists.refresh_token
                 else:
-                    session.delete(find_exists)
+                    await session.delete(find_exists)
                     await session.commit()
         return None

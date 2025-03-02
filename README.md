@@ -1,6 +1,6 @@
 # Allround: Ultimate CRUD helper
 
-![Python version supports](https://img.shields.io/badge/python-3.9_|_3.10_|_3.11_|_3.12-007ec6)
+![Python version supports](https://img.shields.io/badge/python-3.9_|_3.10_|_3.11_|_3.12_|_3.13-007ec6)
 
 Allround is a tool that creates custom databases and CRUD scenarios to make your web services.
 

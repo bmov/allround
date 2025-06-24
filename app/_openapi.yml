@@ -16,6 +16,13 @@ tags:
   - name: ApiRoot
   - name: Auth
   - name: Pages
+components:
+  securitySchemes:
+    globalAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: components.token.Token.decodeToken
 paths:
   /main/hello:
     get:
@@ -84,10 +91,6 @@ paths:
           description: Success
       summary: Get user information
       parameters:
-        - name: X-Access-Token
-          in: header
-          schema:
-            type: string
         - name: username
           in: path
           required: true
@@ -96,6 +99,9 @@ paths:
           description: Username
       tags:
         - Auth
+      security:
+        - globalAuth: []
+        - {}
     put:
       operationId: api.v1.auth.UserApi.put
       responses:
@@ -147,5 +153,26 @@ paths:
           schema:
             type: string
           description: Username
+      tags:
+        - Auth
+  /v1/auth/refresh:
+    post:
+      operationId: api.v1.auth.RefreshApi.post
+      responses:
+        '200':
+          description: Success
+      summary: Refresh access token
+      requestBody:
+        x-body-name: payload
+        content:
+          application/json:
+            schema:
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh token
+              type: object
       tags:
         - Auth

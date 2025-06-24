@@ -9,6 +9,8 @@ from app.database import async_session
 from sqlalchemy.sql.expression import select
 from sqlalchemy.exc import IntegrityError
 
+from starlette.exceptions import HTTPException
+
 secret = env['APP_SECRET']
 jwt_lifetime = env['JWT_LIFETIME']
 jwt_algo = 'HS256'
@@ -16,17 +18,14 @@ jwt_refresh_lifetime = env['JWT_REFRESH_LIFETIME']
 
 
 class Token:
-    def decodeToken(self, token):
+    @staticmethod
+    def decodeToken(token):
         try:
-            decoded = jwt.decode(token, secret, algorithms=[jwt_algo])
+            return jwt.decode(token, secret, algorithms=[jwt_algo])
         except (jwt.exceptions.DecodeError,
                 jwt.exceptions.ExpiredSignatureError) as error:
-            return f'{type(error).__name__}: {error}'
-
-        expired = decoded['exp']
-
-        if expired > time.time():
-            return decoded
+            raise HTTPException(
+                status_code=400, detail=f'{type(error).__name__}: {error}')
 
     def createAccessToken(self, username):
         expire = time.time() + int(jwt_lifetime)
@@ -108,4 +107,22 @@ class Token:
                 else:
                     await session.delete(find_exists)
                     await session.commit()
+        return None
+
+    def getAccessToken(self, request) -> str | None:
+        auth_header = request.headers.get('Authorization')
+
+        if auth_header:
+            token = auth_header.replace('Bearer ', '')
+            return token
+
+        return None
+
+    def getAuthPayload(self, request):
+        access_token = self.getAccessToken(request)
+
+        if access_token:
+            decoded_token = self.decodeToken(access_token)
+            return decoded_token
+
         return None

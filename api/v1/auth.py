@@ -11,7 +11,7 @@ from components.user import User
 
 class UserApi:
     @staticmethod
-    async def get(username):
+    async def get(username, token_info):
         """
         Get user information
         """
@@ -24,19 +24,13 @@ class UserApi:
                            message='Username not found.',
                            code=400)  # Username not found
 
-        access_token = request.headers.get('X-Access-Token')
-
-        if access_token:
-            token = Token()
-            decoded_token = token.decodeToken(access_token)
-
-            if type(decoded_token) is not dict:
-
+        if token_info:
+            if type(token_info) is not dict:
                 return message(None,
                                message='Invalid token.',
                                code=401)  # Invalid token
 
-            if decoded_token['username'] == username:
+            if token_info['username'] == username:
                 # Signed user and get user are same
                 return {
                     'username': username,
@@ -161,3 +155,17 @@ class ResetAccountApi:
         """
 
         return {}
+
+
+class RefreshApi:
+    @staticmethod
+    async def post(payload):
+        token = Token()
+        result = await token.refreshAccessToken(payload['refreshToken'])
+
+        if result:
+            return result
+
+        return message(None,
+                       message='Unable to refresh.',
+                       code=400)

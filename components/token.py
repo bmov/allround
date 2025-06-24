@@ -39,11 +39,6 @@ class Token:
         return token
 
     async def createRefreshToken(self, username):
-        refresh_token = await self.getRefreshToken(username)
-
-        if refresh_token:
-            return refresh_token
-
         new_token = str(uuid.uuid4())
         expire = time.time() + int(jwt_refresh_lifetime)
 
@@ -86,6 +81,31 @@ class Token:
                     await session.commit()
 
         return None
+
+    async def getRefreshTokens(self, username):
+        async with async_session() as session:
+            tokens = await session.scalars(
+                select(TokenRefreshers).
+                filter(TokenRefreshers.username == username,
+                       TokenRefreshers.expire >= 2).
+                order_by(TokenRefreshers.id.desc())
+            )
+
+            result = tokens.all()
+            tokens_list = []
+
+            if tokens:
+                for t in result:
+                    tokens_list.append({
+                        'id': t.id,
+                        'username': t.username,
+                        'refresh_token': t.refresh_token,
+                        'expire': t.expire
+                    })
+
+                return tokens_list
+
+        return []
 
     async def getRefreshToken(self, username):
         async with async_session() as session:

@@ -176,3 +176,14 @@ paths:
               type: object
       tags:
         - Auth
+  /v1/auth/session:
+    get:
+      operationId: api.v1.auth.SessionApi.get
+      responses:
+        '200':
+          description: Success
+      summary: Sessions list
+      tags:
+        - Auth
+      security:
+        - globalAuth: []

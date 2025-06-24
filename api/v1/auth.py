@@ -157,6 +157,25 @@ class ResetAccountApi:
         return {}
 
 
+class SessionApi:
+    @staticmethod
+    async def get(token_info):
+        if not token_info:
+            return message(None,
+                           message='Please sign in first.',
+                           code=401)
+
+        token = Token()
+        result = await token.getRefreshTokens(token_info['username'])
+
+        if result:
+            return {
+                'result': result
+            }
+
+        return {}
+
+
 class RefreshApi:
     @staticmethod
     async def post(payload):

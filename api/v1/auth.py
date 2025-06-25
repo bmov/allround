@@ -2,11 +2,9 @@ import time
 from components.render_json import message
 from connexion import request
 
-from app.models import Users
-from app.database import async_session
-from components.token import Token
+from components.token import Token, TokenRefresher
 from components.password import Password
-from components.user import User
+from components.user import SignupError, User
 
 
 class UserApi:
@@ -71,25 +69,23 @@ class UserApi:
         signdate = time.time()
         confirm = 1
         confirm_key = ''
-        signup = Users(username=username,
-                       passwd=passwd_hash,
-                       name=name,
-                       email=email,
-                       intro_text=intro_text,
-                       signdate=signdate,
-                       confirm=confirm,
-                       confirm_key=confirm_key)
 
-        async with async_session() as session:
-            session.add(signup)
-            try:
-                await session.commit()
-            except Exception:
-                return message(None,
-                               message='Failed to create user.',
-                               code=500)  # error
+        try:
+            signup = await User.signup({
+                'username': username,
+                'passwd': passwd_hash,
+                'name': name,
+                'email': email,
+                'intro_text': intro_text,
+                'signdate': signdate,
+                'confirm': confirm,
+                'confirm_key': confirm_key
+            })
+        except SignupError as error:
+            return message(None,
+                           message=str(error), code=400)
 
-        return {'status': True}
+        return signup
 
     @staticmethod
     def delete(username):
@@ -110,8 +106,6 @@ class SignInApi:
         username = payload['username']
         passwd = payload['passwd']
 
-        token = Token()
-
         # Sign in
         user = User()
         find_username = await user.findUserByUsername(username)
@@ -127,9 +121,9 @@ class SignInApi:
         if pw.verify_passwd(find_username.passwd):
             if find_username.confirm:
                 # success
-                access_token = token.createAccessToken(
+                access_token = Token.createAccessToken(
                     find_username.username)
-                refresh_token = await token.createRefreshToken(
+                refresh_token = await TokenRefresher.createRefreshToken(
                     find_username.username)
 
                 return {
@@ -165,8 +159,7 @@ class SessionApi:
                            message='Please sign in first.',
                            code=401)
 
-        token = Token()
-        result = await token.getRefreshTokens(token_info['username'])
+        result = await TokenRefresher.getRefreshTokens(token_info['username'])
 
         if result:
             return {
@@ -179,8 +172,7 @@ class SessionApi:
 class RefreshApi:
     @staticmethod
     async def post(payload):
-        token = Token()
-        result = await token.refreshAccessToken(payload['refreshToken'])
+        result = await TokenRefresher.refreshAccessToken(payload['refreshToken'])
 
         if result:
             return result

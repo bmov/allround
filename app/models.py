@@ -5,13 +5,11 @@ from sqlalchemy import Column, String, Integer, Text, BigInteger, \
 Base = declarative_base()
 
 
-class Users(Base):
+class UserModel(Base):
     """
     Create an Users table
     """
 
-    # Ensures table will be named in plural and not in singular
-    # as is the name of the model
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BigInteger().with_variant(
@@ -29,13 +27,11 @@ class Users(Base):
         String(64), index=True, nullable=True)
 
 
-class Docs(Base):
+class DocModel(Base):
     """
     Create an Docs table
     """
 
-    # Ensures table will be named in plural and not in singular
-    # as is the name of the model
     __tablename__ = 'docs'
 
     id: Mapped[int] = mapped_column(BigInteger().with_variant(
@@ -49,13 +45,11 @@ class Docs(Base):
         Integer, index=True, nullable=True)
 
 
-class TokenRefreshers(Base):
+class TokenRefresherModel(Base):
     """
     Create an TokenRefreshers table
     """
 
-    # Ensures table will be named in plural and not in singular
-    # as is the name of the model
     __tablename__ = 'token_refreshers'
 
     id: Mapped[int] = mapped_column(BigInteger().with_variant(
@@ -68,13 +62,11 @@ class TokenRefreshers(Base):
         Integer, index=True, default=0, nullable=False)
 
 
-class Pages(Base):
+class PageModel(Base):
     """
     Create an Pages table
     """
 
-    # Ensures table will be named in plural and not in singular
-    # as is the name of the model
     __tablename__ = 'pages'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -86,13 +78,11 @@ class Pages(Base):
     description: Mapped[str] = mapped_column(Text(), nullable=True)
 
 
-class PageFolders(Base):
+class PageFolderModel(Base):
     """
     Create an PageFolders table
     """
 
-    # Ensures table will be named in plural and not in singular
-    # as is the name of the model
     __tablename__ = 'page_folders'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

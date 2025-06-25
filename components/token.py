@@ -84,14 +84,14 @@ class Token:
 
     async def getRefreshTokens(self, username):
         async with async_session() as session:
-            tokens = await session.scalars(
+            tokens = await session.execute(
                 select(TokenRefreshers).
-                filter(TokenRefreshers.username == username,
-                       TokenRefreshers.expire >= 2).
+                where(TokenRefreshers.username == username,
+                      TokenRefreshers.expire >= 2).
                 order_by(TokenRefreshers.id.desc())
             )
 
-            result = tokens.all()
+            result = tokens.scalars().all()
             tokens_list = []
 
             if tokens:

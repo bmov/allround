@@ -21,7 +21,8 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(
         String(64), index=True, unique=True, nullable=False)
     intro_text: Mapped[str] = mapped_column(Text(), nullable=True)
-    signdate: Mapped[int] = mapped_column(Integer, nullable=False)
+    signdate: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), nullable=False)
     confirm: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     confirm_key: Mapped[str] = mapped_column(
         String(64), index=True, nullable=True)
@@ -36,13 +37,16 @@ class DocModel(Base):
 
     id: Mapped[int] = mapped_column(BigInteger().with_variant(
         Integer, 'sqlite'), primary_key=True)
+    uuid: Mapped[str] = mapped_column(
+        String(36), index=True, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     content: Mapped[str] = mapped_column(Text(), nullable=False)
     username: Mapped[str] = mapped_column(
         String(64), index=True, nullable=True)
-    date: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
-    update_date: Mapped[int] = mapped_column(
-        Integer, index=True, nullable=True)
+    date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=False)
+    update_date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=True)
 
 
 class TokenRefresherModel(Base):
@@ -58,8 +62,8 @@ class TokenRefresherModel(Base):
         String(64), index=True, nullable=False)
     refresh_token: Mapped[str] = mapped_column(
         String(36), index=True, unique=True, nullable=False)
-    expire: Mapped[int] = mapped_column(
-        Integer, index=True, default=0, nullable=False)
+    expire: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, default=0, nullable=False)
 
 
 class PageModel(Base):
@@ -70,12 +74,18 @@ class PageModel(Base):
     __tablename__ = 'pages'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(
+        String(36), index=True, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     folder_id: Mapped[int] = mapped_column(
         Integer, default=0, index=True, nullable=False)
     page_type: Mapped[str] = mapped_column(
         String(32), index=True, nullable=False)
     description: Mapped[str] = mapped_column(Text(), nullable=True)
+    date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=False)
+    update_date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=True)
 
 
 class PageFolderModel(Base):
@@ -86,7 +96,13 @@ class PageFolderModel(Base):
     __tablename__ = 'page_folders'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid: Mapped[str] = mapped_column(
+        String(36), index=True, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     parent: Mapped[int] = mapped_column(
         Integer, default=0, index=True, nullable=False)
     description: Mapped[str] = mapped_column(Text(), nullable=True)
+    date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=False)
+    update_date: Mapped[int] = mapped_column(BigInteger().with_variant(
+        Integer, 'sqlite'), index=True, nullable=True)

@@ -10,7 +10,7 @@ Similar to a Contents Management System, that makes it easy for manage data.
 
 Python 3, Connexion-based web app.
 
-The following DBMSs will be supported: MariaDB, PostgreSQL, SQLite
+The following DBMSs will be supported: MySQL >= 8.0, MariaDB, PostgreSQL, SQLite
 
 # Run
 

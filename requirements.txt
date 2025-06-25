@@ -36,7 +36,7 @@ PyJWT==2.8.0
 PyMySQL==1.1.1
 pytest==8.2.0
 python-dotenv==1.0.1
-python-multipart==0.0.9
+python-multipart==0.0.18
 PyYAML==6.0.2
 referencing==0.36.2
 requests==2.32.4

@@ -3,11 +3,13 @@ import time
 import uuid
 
 from app.environment import env
-from app.models import TokenRefreshers
+from app.models import TokenRefresherModel
 from app.database import async_session
 
 from sqlalchemy.sql.expression import select
 from sqlalchemy.exc import IntegrityError
+
+from starlette.exceptions import HTTPException
 
 secret = env['APP_SECRET']
 jwt_lifetime = env['JWT_LIFETIME']
@@ -15,20 +17,18 @@ jwt_algo = 'HS256'
 jwt_refresh_lifetime = env['JWT_REFRESH_LIFETIME']
 
 
-class Token:
-    def decodeToken(self, token):
+class Token():
+    @staticmethod
+    def decodeToken(token):
         try:
-            decoded = jwt.decode(token, secret, algorithms=jwt_algo)
+            return jwt.decode(token, secret, algorithms=[jwt_algo])
         except (jwt.exceptions.DecodeError,
                 jwt.exceptions.ExpiredSignatureError) as error:
-            return f'{type(error).__name__}: {error}'
+            raise HTTPException(
+                status_code=400, detail=f'{type(error).__name__}: {error}')
 
-        expired = decoded['exp']
-
-        if expired > time.time():
-            return decoded
-
-    def createAccessToken(self, username):
+    @staticmethod
+    def createAccessToken(username):
         expire = time.time() + int(jwt_lifetime)
         data = {
             'username': username,
@@ -39,32 +39,50 @@ class Token:
 
         return token
 
-    async def createRefreshToken(self, username):
-        refresh_token = await self.getRefreshToken(username)
+    @staticmethod
+    def getAccessToken(request) -> str | None:
+        auth_header = request.headers.get('Authorization')
 
-        if refresh_token:
-            return refresh_token
+        if auth_header:
+            token = auth_header.replace('Bearer ', '')
+            return token
 
+        return None
+
+    def getAuthPayload(self, request):
+        access_token = self.getAccessToken(request)
+
+        if access_token:
+            decoded_token = self.decodeToken(access_token)
+            return decoded_token
+
+        return None
+
+
+class TokenRefresher(TokenRefresherModel):
+    @staticmethod
+    async def createRefreshToken(username):
         new_token = str(uuid.uuid4())
         expire = time.time() + int(jwt_refresh_lifetime)
 
-        refresh = TokenRefreshers(username=username,
-                                  refresh_token=new_token,
-                                  expire=expire)
+        refresh = TokenRefresher(username=username,
+                                 refresh_token=new_token,
+                                 expire=expire)
 
         try:
             async with async_session() as session:
                 session.add(refresh)
                 await session.commit()
         except IntegrityError:
-            return await self.createRefreshToken(username)
+            return TokenRefresher.createRefreshToken(username)
 
         return new_token
 
-    async def refreshAccessToken(self, refresh_token):
+    @staticmethod
+    async def refreshAccessToken(refresh_token):
         async with async_session() as session:
             find_exists = await session.scalars(
-                select(TokenRefreshers).
+                select(TokenRefresher).
                 filter_by(refresh_token=refresh_token).
                 limit(1)
             )
@@ -76,22 +94,49 @@ class Token:
 
                 # if it valid
                 if check_expire > time.time():
-                    token = self.createAccessToken(find_exists.username)
+                    token = Token.createAccessToken(find_exists.username)
                     return {
                         'success': True,
                         'accessToken': token,
                         'refreshToken': refresh_token
                     }
                 else:
-                    session.delete(find_exists)
+                    await session.delete(find_exists)
                     await session.commit()
 
         return None
 
-    async def getRefreshToken(self, username):
+    @classmethod
+    async def getRefreshTokens(cls, username):
+        async with async_session() as session:
+            tokens = await session.execute(
+                select(cls).
+                where(cls.username == username,
+                      cls.expire >= 2).
+                order_by(cls.id.desc())
+            )
+
+            result = tokens.scalars().all()
+            tokens_list = []
+
+            if tokens:
+                for t in result:
+                    tokens_list.append({
+                        'id': t.id,
+                        'username': t.username,
+                        'refresh_token': t.refresh_token,
+                        'expire': t.expire
+                    })
+
+                return tokens_list
+
+        return []
+
+    @staticmethod
+    async def getRefreshToken(username):
         async with async_session() as session:
             find_exists = await session.scalars(
-                select(TokenRefreshers).
+                select(TokenRefresher).
                 filter_by(username=username).
                 limit(1)
             )
@@ -106,6 +151,6 @@ class Token:
                     # return the current refreshToken
                     return find_exists.refresh_token
                 else:
-                    session.delete(find_exists)
+                    await session.delete(find_exists)
                     await session.commit()
         return None

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncSession, create_async_engine, async_sessionmaker
+)
 
 from .environment import env
 
@@ -11,7 +12,7 @@ if env['ALLROUND_MODE'] == 'dev':
     database_logging = True
 
 engine = create_async_engine(database_uri, echo=database_logging)
-async_session_local = sessionmaker(
+async_session_local = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession)
 
 

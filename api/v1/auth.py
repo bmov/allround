@@ -2,15 +2,14 @@ import time
 from components.render_json import message
 from connexion import request
 
-from app.models import Users
-from app.database import async_session
-from components.token import Token
+from components.token import Token, TokenRefresher
 from components.password import Password
-from components.user import User
+from components.user import SignupError, User
 
 
 class UserApi:
-    async def get(username):
+    @staticmethod
+    async def get(username, token_info):
         """
         Get user information
         """
@@ -23,19 +22,13 @@ class UserApi:
                            message='Username not found.',
                            code=400)  # Username not found
 
-        access_token = request.headers.get('X-Access-Token')
-
-        if access_token:
-            token = Token()
-            decoded_token = token.decodeToken(access_token)
-
-            if type(decoded_token) is not dict:
-
+        if token_info:
+            if type(token_info) is not dict:
                 return message(None,
                                message='Invalid token.',
                                code=401)  # Invalid token
 
-            if decoded_token['username'] == username:
+            if token_info['username'] == username:
                 # Signed user and get user are same
                 return {
                     'username': username,
@@ -58,6 +51,7 @@ class UserApi:
             'signdate': find_username.signdate,
         }
 
+    @staticmethod
     async def put(username, payload):
         """
         Sign up
@@ -75,26 +69,25 @@ class UserApi:
         signdate = time.time()
         confirm = 1
         confirm_key = ''
-        signup = Users(username=username,
-                       passwd=passwd_hash,
-                       name=name,
-                       email=email,
-                       intro_text=intro_text,
-                       signdate=signdate,
-                       confirm=confirm,
-                       confirm_key=confirm_key)
 
-        async with async_session() as session:
-            session.add(signup)
-            try:
-                await session.commit()
-            except Exception:
-                return message(None,
-                               message='Failed to create user.',
-                               code=500)  # error
+        try:
+            signup = await User.signup({
+                'username': username,
+                'passwd': passwd_hash,
+                'name': name,
+                'email': email,
+                'intro_text': intro_text,
+                'signdate': signdate,
+                'confirm': confirm,
+                'confirm_key': confirm_key
+            })
+        except SignupError as error:
+            return message(None,
+                           message=str(error), code=400)
 
-        return {'status': True}
+        return signup
 
+    @staticmethod
     def delete(username):
         """
         Remove account
@@ -104,6 +97,7 @@ class UserApi:
 
 
 class SignInApi:
+    @staticmethod
     async def post(payload):
         """
         Sign in
@@ -111,8 +105,6 @@ class SignInApi:
 
         username = payload['username']
         passwd = payload['passwd']
-
-        token = Token()
 
         # Sign in
         user = User()
@@ -129,9 +121,9 @@ class SignInApi:
         if pw.verify_passwd(find_username.passwd):
             if find_username.confirm:
                 # success
-                access_token = token.createAccessToken(
+                access_token = Token.createAccessToken(
                     find_username.username)
-                refresh_token = await token.createRefreshToken(
+                refresh_token = await TokenRefresher.createRefreshToken(
                     find_username.username)
 
                 return {
@@ -150,9 +142,41 @@ class SignInApi:
 
 
 class ResetAccountApi:
-    def post():
+    @staticmethod
+    async def post():
         """
         Reset account
         """
 
         return {}
+
+
+class SessionApi:
+    @staticmethod
+    async def get(token_info):
+        if not token_info:
+            return message(None,
+                           message='Please sign in first.',
+                           code=401)
+
+        result = await TokenRefresher.getRefreshTokens(token_info['username'])
+
+        if result:
+            return {
+                'result': result
+            }
+
+        return {}
+
+
+class RefreshApi:
+    @staticmethod
+    async def post(payload):
+        result = await TokenRefresher.refreshAccessToken(payload['refreshToken'])
+
+        if result:
+            return result
+
+        return message(None,
+                       message='Unable to refresh.',
+                       code=400)

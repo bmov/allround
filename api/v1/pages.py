@@ -4,6 +4,7 @@ from components.page import (
 
 
 class PagesApi:
+    @staticmethod
     async def put(payload):
         name = payload['name']
         folder = payload['folder']
@@ -18,11 +19,12 @@ class PagesApi:
                                description=description)
         except (FolderNotFoundError, PageNameError) as error:
             return message(None,
-                           message=error, code=400)
+                           message=str(error), code=400)
 
         return {'status': True}
 
-    def get():
+    @staticmethod
+    async def get():
         return {
             'data': 'It works!'
         }

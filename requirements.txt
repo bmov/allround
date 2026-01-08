@@ -43,6 +43,6 @@ sqlalchemy==2.0.38
 starlette==0.47.1
 swagger-ui-bundle==1.1.0
 typing-extensions==4.14.1
-urllib3==2.5.0
+urllib3==2.6.3
 uvicorn==0.35.0
 werkzeug==3.1.3

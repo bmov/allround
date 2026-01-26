@@ -15,7 +15,7 @@ dependencies = [
     "connexion[swagger-ui]==3.0.6",
     "pyjwt==2.8.0",
     "python-dotenv==1.0.1",
-    "python-multipart==0.0.18",
+    "python-multipart==0.0.22",
     "sqlalchemy==2.0.38",
     "uvicorn>=0.35.0",
 ]
